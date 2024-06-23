@@ -21,6 +21,7 @@ func (h *Handler) createMetric(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
+	
 	rw.WriteHeader(http.StatusOK)
 }
 
@@ -34,6 +35,7 @@ func (h *Handler) GetMetric(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte(val))
 }
 
@@ -42,6 +44,7 @@ func (h *Handler) GetMetrics(rw http.ResponseWriter, r *http.Request) {
 
 	metHTML := strings.Replace(HTMLMet, "{{metrics}}", metrics, -1)
 
+	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte(metHTML))
 }
 

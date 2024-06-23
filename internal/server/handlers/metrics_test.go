@@ -1,14 +1,22 @@
 package handlers
 
 import (
-	"github.com/go-resty/resty/v2"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/go-resty/resty/v2"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func TestCreateMetrics(t *testing.T) {
+	logger, err := zap.NewDevelopment()
+	require.NoError(t, err)
+	defer logger.Sync()
+
+	suggared := *logger.Sugar()
+
 	tests := []struct {
 		name         string
 		url          string
@@ -39,7 +47,7 @@ func TestCreateMetrics(t *testing.T) {
 			expectedCode: http.StatusBadRequest,
 		},
 	}
-	srv := httptest.NewServer(InitRouter())
+	srv := httptest.NewServer(InitRouter(suggared))
 	defer srv.Close()
 
 	for _, tt := range tests {

@@ -3,9 +3,11 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/DenisquaP/ya-metrics/internal/server/middlewares"
 	yametrics "github.com/DenisquaP/ya-metrics/internal/server/yaMetrics"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -19,8 +21,9 @@ func NewHandler() *Handler {
 	}
 }
 
-func InitRouter() http.Handler {
+func InitRouter(logger zap.SugaredLogger) http.Handler {
 	r := chi.NewRouter()
+	r.Use(middlewares.Logging(logger))
 
 	h := NewHandler()
 
