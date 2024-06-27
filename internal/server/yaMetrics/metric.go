@@ -2,13 +2,22 @@ package yametrics
 
 import (
 	"fmt"
-	"strconv"
 )
 
 type Metric interface {
-	WriteMetric(name, typeMet, val string) error
+	MetricGetter
+	MetricWriter
+}
+
+type MetricWriter interface {
+	WriteGouge(name string, val float64) error
+	WriteCounter(name string, val int64) error
+}
+
+type MetricGetter interface {
 	GetMetrics() string
-	GetMetric(typeMet, name string) (string, error)
+	GetGauge(name string) (float64, error)
+	GetCounter(name string) (int64, error)
 }
 
 // MemStorage struct
@@ -24,26 +33,19 @@ func NewMemStorage() *MemStorage {
 	}
 }
 
-func (m *MemStorage) WriteMetric(name, typeMet, val string) error {
-	if typeMet == "gauge" {
-		g, err := strconv.ParseFloat(val, 64)
-		if err != nil {
-			return fmt.Errorf("unsupported type of gauge: %s", err.Error())
-		}
-		m.Gauge[name] = g
-		return nil
-	} else if typeMet == "counter" {
-		c, err := strconv.Atoi(val)
-		if err != nil {
-			return fmt.Errorf("unsupported type of gauge: %s", err.Error())
-		}
-		m.Counter[name] += int64(c)
-		return nil
-	}
-
-	return fmt.Errorf("unsupported type of metric: %s", typeMet)
+// Запись метрики типа Gauge
+func (m *MemStorage) WriteGauge(name string, val float64) (float64, error) {
+	m.Gauge[name] = val
+	return m.Gauge[name], nil
 }
 
+// Запись метрики типа Counter
+func (m *MemStorage) WriteCounter(name string, val int64) (int64, error) {
+	m.Counter[name] += val
+	return m.Counter[name], nil
+}
+
+// Получение всех метрик
 func (m *MemStorage) GetMetrics() string {
 	res := ""
 
@@ -57,20 +59,22 @@ func (m *MemStorage) GetMetrics() string {
 	return res
 }
 
-func (m *MemStorage) GetMetric(typeMet, name string) (string, error) {
-	if typeMet == "gauge" {
-		g, ok := m.Gauge[name]
-		if !ok {
-			return "", fmt.Errorf("variable does not exists")
-		}
-		return fmt.Sprintf("%v", g), nil
-	} else if typeMet == "counter" {
-		c, ok := m.Counter[name]
-		if !ok {
-			return "", fmt.Errorf("variable does not exists")
-		}
-		return fmt.Sprintf("%v", c), nil
+// Получение метрики типа Gauge
+func (m *MemStorage) GetGauge(name string) (float64, error) {
+	g, ok := m.Gauge[name]
+	if !ok {
+		return 0, fmt.Errorf("variable does not exists")
 	}
 
-	return "", fmt.Errorf("unsupported type of metric")
+	return g, nil
+}
+
+// Получение метрики типа Counter
+func (m *MemStorage) GetCounter(name string) (int64, error) {
+	c, ok := m.Counter[name]
+	if !ok {
+		return 0, fmt.Errorf("variable does not exists")
+	}
+
+	return c, nil
 }

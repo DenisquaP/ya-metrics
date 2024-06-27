@@ -46,6 +46,10 @@ func Run() {
 
 	ctx := context.Background()
 
-	mem.UpdateMetrics(ctx, cfg.PollInterval)
-	mem.SendToServer(ctx, cfg.RunAddr, cfg.ReportInterval)
+	for {
+		mem.UpdateMetrics(ctx, cfg.PollInterval)
+		if err := mem.SendToServer(ctx, cfg.RunAddr, cfg.ReportInterval); err != nil {
+			log.Printf("error send metrics: %s", err)
+		}
+	}
 }
