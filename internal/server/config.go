@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/DenisquaP/ya-metrics/internal/server/handlers"
 	"github.com/caarlos0/env/v11"
+	"go.uber.org/zap"
+
+	"github.com/DenisquaP/ya-metrics/internal/server/handlers"
 )
 
 type config struct {
@@ -28,15 +30,23 @@ func NewConfig() (config, error) {
 }
 
 func Run() {
-	cfg, err := NewConfig()
+	logger, err := zap.NewDevelopment()
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer logger.Sync()
 
-	log.Println("Starting server on " + cfg.RunAddr + "...")
-	router := handlers.InitRouter()
+	suggared := *logger.Sugar()
+
+	cfg, err := NewConfig()
+	if err != nil {
+		suggared.Fatalw("Failed to parse config", "error", err)
+	}
+
+	suggared.Infow("Starting server", "address", cfg.RunAddr)
+	router := handlers.InitRouter(suggared)
 
 	if err := http.ListenAndServe(cfg.RunAddr, router); err != nil {
-		log.Fatal(err)
+		suggared.Fatalw("Failed to start server", "error", err)
 	}
 }

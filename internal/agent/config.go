@@ -6,8 +6,9 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/DenisquaP/ya-metrics/internal/agent/memyandex"
 	"github.com/caarlos0/env/v11"
+
+	"github.com/DenisquaP/ya-metrics/internal/agent/memyandex"
 )
 
 type config struct {
@@ -46,6 +47,10 @@ func Run() {
 
 	ctx := context.Background()
 
-	mem.UpdateMetrics(ctx, cfg.PollInterval)
-	mem.SendToServer(ctx, cfg.RunAddr, cfg.ReportInterval)
+	for {
+		mem.UpdateMetrics(ctx, cfg.PollInterval)
+		if err := mem.SendToServer(ctx, cfg.RunAddr, cfg.ReportInterval); err != nil {
+			log.Printf("error send metrics: %s", err)
+		}
+	}
 }
