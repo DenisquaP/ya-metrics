@@ -6,11 +6,12 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/DenisquaP/ya-metrics/internal/agent/memyandex"
 	"github.com/caarlos0/env/v11"
+
+	"github.com/DenisquaP/ya-metrics/internal/agent/memyandex"
 )
 
-type config struct {
+type Config struct {
 	RunAddr string `env:"ADDRESS" envDefault:"localhost:8080"`
 
 	// частота отправки метрик на сервер
@@ -20,8 +21,8 @@ type config struct {
 	PollInterval int `env:"POLL_INTERVAL" envDefault:"2"`
 }
 
-func NewConfig() (config, error) {
-	var cfg config
+func NewConfig() (Config, error) {
+	var cfg Config
 
 	// Setting values by flags, if env not empty, using env
 	flag.StringVar(&cfg.RunAddr, "a", "localhost:8080", "address and port to run server")
@@ -29,7 +30,7 @@ func NewConfig() (config, error) {
 	flag.IntVar(&cfg.PollInterval, "p", 2, "interval between polling calls")
 
 	if err := env.Parse(&cfg); err != nil {
-		return config{}, err
+		return Config{}, err
 	}
 
 	flag.Parse()
@@ -42,10 +43,15 @@ func Run() {
 		log.Fatal(err)
 	}
 
+	// Creating struct for collecting metrics
 	mem := memyandex.MemStatsYaSt{RuntimeMem: &runtime.MemStats{}}
 
 	ctx := context.Background()
 
-	mem.UpdateMetrics(ctx, cfg.PollInterval)
-	mem.SendToServer(ctx, cfg.RunAddr, cfg.ReportInterval)
+	for {
+		mem.UpdateMetrics(ctx, cfg.PollInterval)
+		if err := mem.SendToServer(ctx, cfg.RunAddr, cfg.ReportInterval); err != nil {
+			log.Printf("error send metrics: %s", err)
+		}
+	}
 }
