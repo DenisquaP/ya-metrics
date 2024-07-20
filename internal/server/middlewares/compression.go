@@ -12,7 +12,7 @@ func Compression(next http.Handler) http.Handler {
 		rw := w
 
 		encodings := r.Header.Get("Accept-Encoding")
-		// Если принимаем gzip то сжимаем
+		// Если принимаем gzip, то сжимаем
 		if strings.Contains(encodings, "gzip") {
 			cw := compression.NewCompressWriter(w)
 			rw = cw

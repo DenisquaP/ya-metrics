@@ -54,7 +54,7 @@ func TestCreateMetricsMemStorage(t *testing.T) {
 	}
 
 	mem := yametrics.NewMemStorage("mem.json")
-	srv := httptest.NewServer(NewRouterWithMiddlewares(context.Background(), suggared, mem))
+	srv := httptest.NewServer(NewRouterWithMiddlewares(context.Background(), suggared, mem, ""))
 	defer srv.Close()
 
 	for _, tt := range tests {
@@ -84,9 +84,9 @@ func TestCreateMetricsDB_200(t *testing.T) {
 	db := mocks.NewMockDBInterface(ctrl)
 	db.EXPECT().WriteCounter(gomock.Any(), "Met", int64(2)).Return(int64(2), nil)
 
-	suggared := logger.Sugar()
+	sugared := logger.Sugar()
 
-	srv := httptest.NewServer(NewRouterWithMiddlewares(ctx, suggared, db))
+	srv := httptest.NewServer(NewRouterWithMiddlewares(ctx, sugared, db, ""))
 	defer srv.Close()
 
 	req := resty.New().R()

@@ -18,8 +18,9 @@ type Config struct {
 	// Restore metrics from file
 	Restore bool `env:"RESTORE" envDefault:"true"`
 	// Database address
-	// DatabaseDsn string `env:"DATABASE_DSN" envDefault:"host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"`
 	DatabaseDsn string `env:"DATABASE_DSN" envDefault:""`
+	// Key for check sum
+	Key string `env:"KEY" envDefault:""`
 }
 
 func NewConfig() (Config, error) {
@@ -30,8 +31,8 @@ func NewConfig() (Config, error) {
 	flag.IntVar(&cfg.StoreInterval, "i", 300, "interval between saving metrics to file")
 	flag.StringVar(&cfg.FileStoragePath, "f", "/tmp/metrics-db.json", "path to file with metrics")
 	flag.BoolVar(&cfg.Restore, "r", true, "restore metrics from file")
-	// flag.StringVar(&cfg.DatabaseDsn, "d", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable", "database address")
 	flag.StringVar(&cfg.DatabaseDsn, "d", "", "database address")
+	flag.StringVar(&cfg.Key, "k", "", "key for check sum")
 
 	if err := env.Parse(&cfg); err != nil {
 		return Config{}, err

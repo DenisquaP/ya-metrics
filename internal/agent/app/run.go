@@ -40,7 +40,7 @@ func Run() {
 		case <-ctx.Done():
 			return
 		case <-tickerSend.C:
-			if err := mem.SendAllMetricsToServer(ctx, cfg.RunAddr); err != nil {
+			if err := mem.SendAllMetricsToServer(ctx, cfg.RunAddr, cfg.Key); err != nil {
 				sugared.Errorw("Failed to send metrics", "error", err)
 			}
 

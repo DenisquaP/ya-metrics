@@ -13,18 +13,18 @@ import (
 )
 
 type Handler struct {
-	Metrics usecase.MetricInterface
+	Metrics usecase.MetricService
 	Logger  *zap.SugaredLogger
 }
 
-func NewHandler(metrics usecase.MetricInterface, logger *zap.SugaredLogger) *Handler {
+func NewHandler(metrics usecase.MetricService, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
 		Metrics: metrics,
 		Logger:  logger,
 	}
 }
 
-func NewRouterWithMiddlewares(ctx context.Context, logger *zap.SugaredLogger, metrics usecase.MetricInterface) http.Handler {
+func NewRouterWithMiddlewares(ctx context.Context, logger *zap.SugaredLogger, metrics usecase.MetricService, key string) http.Handler {
 	select {
 	case <-ctx.Done():
 		logger.Errorw("context canceled", "error", ctx.Err())
@@ -36,7 +36,7 @@ func NewRouterWithMiddlewares(ctx context.Context, logger *zap.SugaredLogger, me
 
 	r.Use(middlewares.Logging(logger))
 
-	// Middleware for comporession
+	// Middleware for compression
 	r.Use(middlewares.Compression)
 
 	h := NewHandler(metrics, logger)
@@ -59,9 +59,17 @@ func NewRouterWithMiddlewares(ctx context.Context, logger *zap.SugaredLogger, me
 
 		// Get metric JSON
 		r.Post("/value/", h.GetMetricJSON)
+	})
+
+	r.Route("/updates", func(r chi.Router) {
+		r.Use(middleware.AllowContentType("application/json"))
+
+		if key != "" {
+			r.Use(middlewares.GetSum(logger, key))
+		}
 
 		// Update multiple metric
-		r.Post("/updates/", h.UpdateMultiple)
+		r.Post("/", h.UpdateMultiple)
 	})
 
 	// Получение метрик v1
