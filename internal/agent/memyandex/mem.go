@@ -4,6 +4,8 @@ import (
 	"context"
 	"runtime"
 	"time"
+
+	"github.com/shirou/gopsutil/v4/mem"
 )
 
 const MetricsUpdateURL = "http://%s/update/"
@@ -13,15 +15,27 @@ type Counter int64
 type Gauge float64
 
 type MemStatsYaSt struct {
-	RuntimeMem  *runtime.MemStats
-	PollCount   int64
-	RandomValue float64
+	RuntimeMem      *runtime.MemStats
+	PollCount       int64
+	RandomValue     float64
+	TotalMemory     float64
+	FreeMemory      float64
+	CPUutilization1 float64
 }
 
-func (m *MemStatsYaSt) UpdateMetrics(ctx context.Context) {
+func (m *MemStatsYaSt) UpdateMetrics(ctx context.Context, errChan chan error) {
 	runtime.ReadMemStats(m.RuntimeMem)
 	m.RandomValue = float64(m.RuntimeMem.Alloc) / float64(1024)
 	m.PollCount++
+
+	v, err := mem.VirtualMemory()
+	if err != nil {
+		errChan <- err
+	}
+
+	m.TotalMemory = float64(v.Total)
+	m.FreeMemory = float64(v.Free)
+
 }
 
 func (m *MemStatsYaSt) SendToServer(ctx context.Context, runAddr string, reportInterval int) error {

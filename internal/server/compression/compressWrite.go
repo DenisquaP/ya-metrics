@@ -5,27 +5,27 @@ import (
 	"net/http"
 )
 
-type compressWriter struct {
+type CompressWriter struct {
 	w  http.ResponseWriter
 	gz *gzip.Writer
 }
 
-func NewCompressWriter(w http.ResponseWriter) *compressWriter {
-	return &compressWriter{
+func NewCompressWriter(w http.ResponseWriter) *CompressWriter {
+	return &CompressWriter{
 		w:  w,
 		gz: gzip.NewWriter(w),
 	}
 }
 
-func (c *compressWriter) Write(p []byte) (int, error) {
+func (c *CompressWriter) Write(p []byte) (int, error) {
 	return c.gz.Write(p)
 }
 
-func (c *compressWriter) Header() http.Header {
+func (c *CompressWriter) Header() http.Header {
 	return c.w.Header()
 }
 
-func (c *compressWriter) WriteHeader(statusCode int) {
+func (c *CompressWriter) WriteHeader(statusCode int) {
 	if statusCode < http.StatusMultipleChoices {
 		c.w.Header().Set("Content-Encoding", "gzip")
 	}
@@ -33,6 +33,6 @@ func (c *compressWriter) WriteHeader(statusCode int) {
 	c.w.WriteHeader(statusCode)
 }
 
-func (c *compressWriter) Close() error {
+func (c CompressWriter) Close() error {
 	return c.gz.Close()
 }

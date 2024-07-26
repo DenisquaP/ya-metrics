@@ -9,11 +9,17 @@ import (
 type Config struct {
 	RunAddr string `env:"ADDRESS" envDefault:"localhost:8080"`
 
-	// частота отправки метрик на сервер
+	// Frequency of sending metrics to server
 	ReportInterval int `env:"REPORT_INTERVAL" envDefault:"10"`
 
-	// частота опроса метрик из пакета runtime
+	// Frequency of a metric survey частота опроса метрик из пакета runtime
 	PollInterval int `env:"POLL_INTERVAL" envDefault:"2"`
+
+	// Limit of requests to server
+	RateLimit int `env:"RATE_LIMIT" envDefault:"10"`
+
+	// Crypto key
+	Key string `env:"KEY" envDefault:""`
 }
 
 func NewConfig() (Config, error) {
@@ -23,6 +29,8 @@ func NewConfig() (Config, error) {
 	flag.StringVar(&cfg.RunAddr, "a", "localhost:8080", "address and port to run server")
 	flag.IntVar(&cfg.ReportInterval, "r", 10, "interval between report calls")
 	flag.IntVar(&cfg.PollInterval, "p", 2, "interval between polling calls")
+	flag.StringVar(&cfg.Key, "k", "", "key to use for encryption")
+	flag.IntVar(&cfg.RateLimit, "l", 10, "limit of requests to server")
 
 	if err := env.Parse(&cfg); err != nil {
 		return Config{}, err

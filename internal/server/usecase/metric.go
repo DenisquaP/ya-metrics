@@ -5,11 +5,11 @@ import (
 )
 
 type Metric struct {
-	m      MetricInterface // struct implementation interfacep
+	m      MetricService // struct implementation interfacep
 	logger *zap.SugaredLogger
 }
 
-func NewMetric(m MetricInterface, logger *zap.SugaredLogger) *Metric {
+func NewMetric(m MetricService, logger *zap.SugaredLogger) *Metric {
 	return &Metric{
 		m:      m,
 		logger: logger,

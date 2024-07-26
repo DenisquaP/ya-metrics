@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"runtime"
+	"sync/atomic"
 	"time"
 
 	"github.com/DenisquaP/ya-metrics/internal/agent/config"
@@ -33,19 +34,26 @@ func Run() {
 	// Tickers to send and update metrics
 	tickerSend := time.NewTicker(time.Duration(cfg.ReportInterval) * time.Second)
 	tickerUpdate := time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
+	errChan := make(chan error)
+
+	var rateCount atomic.Int64
 
 	// Loop update and send metrics
 	for {
 		select {
+		case err = <-errChan:
+			close(errChan)
+			sugared.Fatalw("error in goroutine", "error", err)
 		case <-ctx.Done():
 			return
 		case <-tickerSend.C:
-			if err := mem.SendAllMetricsToServer(ctx, cfg.RunAddr); err != nil {
-				sugared.Errorw("Failed to send metrics", "error", err)
+			if int(rateCount.Load()) > cfg.RateLimit {
+				// if count of requests to server > RateLimit from cfg, wait for a second
+				<-time.After(1 * time.Second)
 			}
-
+			go mem.SendAllMetricsToServer(ctx, cfg.RunAddr, cfg.Key, errChan, &rateCount)
 		case <-tickerUpdate.C:
-			mem.UpdateMetrics(ctx)
+			go mem.UpdateMetrics(ctx, errChan)
 		}
 
 	}

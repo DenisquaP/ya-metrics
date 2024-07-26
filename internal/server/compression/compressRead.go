@@ -5,28 +5,28 @@ import (
 	"io"
 )
 
-type compressReader struct {
+type CompressReader struct {
 	r  io.ReadCloser
 	gz *gzip.Reader
 }
 
-func NewCompressReader(r io.ReadCloser) (*compressReader, error) {
+func NewCompressReader(r io.ReadCloser) (*CompressReader, error) {
 	gz, err := gzip.NewReader(r)
 	if err != nil {
 		return nil, err
 	}
 
-	return &compressReader{
+	return &CompressReader{
 		r:  r,
 		gz: gz,
 	}, nil
 }
 
-func (c *compressReader) Read(b []byte) (int, error) {
+func (c *CompressReader) Read(b []byte) (int, error) {
 	return c.gz.Read(b)
 }
 
-func (c *compressReader) Close() error {
+func (c *CompressReader) Close() error {
 	if err := c.r.Close(); err != nil {
 		return err
 	}

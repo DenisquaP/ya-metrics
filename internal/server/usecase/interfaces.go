@@ -6,14 +6,14 @@ import (
 	"github.com/DenisquaP/ya-metrics/internal/models"
 )
 
-// Metrics interface
-type MetricInterface interface {
+// MetricService Metrics interface
+type MetricService interface {
 	MetricGetter
 	MetricWriter
 	Ping(ctx context.Context) error
 }
 
-// Iterface for writing metrics
+// MetricWriter Interface for writing metrics
 type MetricWriter interface {
 	// WriteGauge writes gauge metric
 	WriteGauge(ctx context.Context, name string, val float64) (float64, error)
@@ -23,7 +23,7 @@ type MetricWriter interface {
 	WriteMetrics(context.Context, []*models.Metrics) error
 }
 
-// Interface for getting metrics
+// MetricGetter Interface for getting metrics
 type MetricGetter interface {
 	// GetMetrics get all metrics
 	GetMetrics(ctx context.Context) (string, error)

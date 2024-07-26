@@ -28,7 +28,7 @@ func TestInitHandlersDB(t *testing.T) {
 
 	sugared := logger.Sugar()
 
-	r := NewRouterWithMiddlewares(ctx, sugared, db)
+	r := NewRouterWithMiddlewares(ctx, sugared, db, "")
 
 	assert.NotEmpty(t, r)
 }
@@ -41,7 +41,7 @@ func TestInitHandlersMemStorage(t *testing.T) {
 	sugared := logger.Sugar()
 	mem := yametrics.NewMemStorage("mem.json")
 
-	r := NewRouterWithMiddlewares(context.Background(), sugared, mem)
+	r := NewRouterWithMiddlewares(context.Background(), sugared, mem, "")
 
 	assert.NotEmpty(t, r)
 }
